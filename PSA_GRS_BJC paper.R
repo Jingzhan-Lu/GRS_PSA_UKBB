@@ -119,9 +119,11 @@ logit <- glm(pheno ~ grs + value1, data = all_data_grs, family = "binomial")
 all_data_grs$prob <- predict(logit, newdata = all_data_grs, type = "response")# Predicted probability
 roc_obj <- roc(all_data_grs$pheno ~ all_data_grs$prob, plot = TRUE, print.auc = TRUE, ci = TRUE)# ROC curve
 
-#Heatmap visualization
+
+# 7. Aditional Data Visulisation code
+# Heatmap visualization
 pred_grid <- all_data_grs %>%
-  mutate(GRS_quantile = ntile(grs, 10))  # 分为10个分位
+  mutate(GRS_quantile = ntile(grs, 10))
 pred_grid$prob <- predict(logit, newdata = pred_grid, type = "response")
 pred_grid$GRS_quantile <- factor(pred_grid$GRS_quantile, 
                                  levels = 1:10,
@@ -134,3 +136,51 @@ p <- pred_grid |>
     y = "Median PSA value (ng/ML)", 
     color = "Predicted\nProbability"
   )
+
+#Foreast Plot
+models <- list(
+  "Age"                             = pheno ~ median_age,
+  "FH"                              = pheno ~ FH,
+  "Symptoms"                        = pheno ~ symptoms,
+  "PSA"                             = pheno ~ value1,
+  "GRS"                             = pheno ~ grs,
+  "Age+PSA"                         = pheno ~ median_age + value1,
+  "GRS+PSA"                         = pheno ~ grs + value1,
+  "PSA+FH+Symptoms"                    = pheno ~ value1 + FH + symptoms,
+  "GRS+Age"                         = pheno ~ grs + median_age,
+  "GRS+PSA+Age"                     = pheno ~ grs + median_age + value1,
+  "GRS+FH+Symptoms"                 = pheno ~ grs + FH + symptoms,
+  "Age+FH+Symptoms"             = pheno ~ median_age + FH + symptoms,
+  "GRS+PSA+FH+Symptoms"             = pheno ~ grs + value1 + FH + symptoms,
+  "GRS+PSA+Age+FH+Symptoms"         = pheno ~ grs + median_age + FH + symptoms + value1
+)
+
+results <- lapply(names(models), function(name) {
+  model <- glm(models[[name]], data = all_data_grs2, family = "binomial")
+  prob <- predict(model, type = "response")
+  roc_obj <- roc(all_data_grs2$pheno, prob, ci = TRUE)
+  ci_vals <- ci.auc(roc_obj)
+  tibble(
+    Model = name,
+    AUC = round(as.numeric(roc_obj$auc), 2),
+    CI_low = round(ci_vals[1], 2),
+    CI_high = round(ci_vals[3], 2)
+  )
+})
+results_df <- bind_rows(results)
+results_df <- results_df %>%
+  arrange(AUC) %>%
+  mutate(
+    Model = fct_inorder(Model),
+    Label = sprintf("%.2f (%.2f–%.2f)", AUC, CI_low, CI_high)
+  )
+
+ggplot(results_df, aes(x = AUC, y = Model)) +
+  geom_point(color = "black") +
+  geom_errorbarh(aes(xmin = CI_low, xmax = CI_high), color = "green", height = 0.3) +
+  geom_text(aes(label = Label, x = CI_low - 0.015), color = "black", hjust = 1, size = 3.5) +
+  theme_minimal() +
+  labs(x = "AUC (95% CI)", y = "Model Combination") +
+  xlim(0.38, max(results_df$CI_high) + 0.00) +
+  theme(axis.text = element_text(size = 10))
+
