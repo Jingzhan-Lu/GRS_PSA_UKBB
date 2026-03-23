@@ -36,7 +36,7 @@ These pipelines are required for extracting and harmonizing healthcare records f
 
 📄 Citation
 If you use this code, please cite our article (upon acceptance):
-Lu et al. (2025). Improved prostate cancer prediction by combining Prostate-Specific Antigen (PSA) test results with Genetic Risk Scores. British Journal of Cancer, 2026.
+Lu et al. (2026). Improved prostate cancer prediction by combining Prostate-Specific Antigen (PSA) test results with Genetic Risk Scores. British Journal of Cancer, 2026.
 
 📬 Contact
 For questions or collaboration requests, please contact:
