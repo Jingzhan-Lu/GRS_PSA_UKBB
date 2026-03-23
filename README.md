@@ -13,6 +13,18 @@ Required R packages: dplyr, ggplot2, pROC, purrr, tidyverse, devtools
 You can install all required packages using:
 install.packages(c("dplyr", "ggplot2", "pROC", "purrr", "tidyverse", "devtools"))
 
+# 🔹 Required Pipelines
+
+Before running the analysis, we recommend installing the following two essential pipelines:
+
+1. ukbextractR — Reproducible Extraction of Linked Healthcare Records from UK Biobank
+GitHub: https://github.com/ExeterGenetics/ukbextractR
+
+2. GRS-Nexus — Genetic Risk Score calculation pipeline
+GitHub: https://github.com/hdg204/GRS-Nexus
+
+These pipelines are required for extracting and harmonizing healthcare records from UK Biobank and calculating GRS scores.
+
 # 🔹 Usage
 1. Load and Clean PSA Data
 2. Filter Post-Surgery PSA
